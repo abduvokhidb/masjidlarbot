@@ -13,7 +13,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Bot sozlamalari
-BOT_TOKEN = os.getenv('BOT_TOKEN', 'YOUR_BOT_TOKEN')
+BOT_TOKEN = os.getenv('BOT_TOKEN', '1436546945:AAFInxVnh3D-B1D4nI6y6I4vxMP5jK-12H4')
 CHANNEL_USERNAME = 'quqonnamozvaqti'
 
 # Foydalanuvchi sozlamalari saqlash
@@ -328,7 +328,7 @@ async def handle_all_masjids(update: Update, context: ContextTypes.DEFAULT_TYPE)
         reply_markup=get_main_keyboard()
     )
 
-async def send_push_to_selected_users(masjid_key: str, new_times: Dict[str, str]):
+async def send_push_to_selected_users(masjid_key: str, new_times: Dict[str, str], application):
     """Faqat tanlangan foydalanuvchilarga push yuborish"""
     masjid_name = MASJIDLAR.get(masjid_key, masjid_key)
     now = datetime.now()
@@ -394,27 +394,42 @@ def main():
     """Asosiy funksiya"""
     load_user_settings()
     
-    global application
-    application = Application.builder().token(BOT_TOKEN).build()
-    
-    # Handlerlar
-    application.add_handler(CommandHandler("start", start_command))
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-    application.add_handler(CallbackQueryHandler(handle_callback_query))
-    
-    # Kanal monitoring ni background task sifatida ishga tushirish
-    asyncio.create_task(monitor_channel_updates())
-    
-    logger.info("Bot ishga tushdi!")
-    
-    # Webhook rejimi
-    PORT = int(os.environ.get('PORT', 8000))
-    application.run_webhook(
-        listen="0.0.0.0",
-        port=PORT,
-        url_path=BOT_TOKEN,
-        webhook_url=f"https://masjidlar-bot.onrender.com/{BOT_TOKEN}"
-    )
+    try:
+        # Bot yaratish - Python 3.13 uchun mos
+        application = Application.builder().token(BOT_TOKEN).build()
+        
+        # Handlerlar
+        application.add_handler(CommandHandler("start", start_command))
+        application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+        application.add_handler(CallbackQueryHandler(handle_callback_query))
+        
+        logger.info("Bot ishga tushdi!")
+        
+        # Webhook rejimi (Render uchun)
+        PORT = int(os.environ.get('PORT', 8000))
+        
+        # Kanal monitoring ni alohida task sifatida ishga tushirish
+        async def start_monitoring():
+            await monitor_channel_updates()
+        
+        # Background task
+        asyncio.create_task(start_monitoring())
+        
+        # Webhook ishga tushirish
+        application.run_webhook(
+            listen="0.0.0.0",
+            port=PORT,
+            url_path=BOT_TOKEN,
+            webhook_url=f"https://masjidlar-bot.onrender.com/{BOT_TOKEN}"
+        )
+        
+    except Exception as e:
+        logger.error(f"Bot ishga tushirishda xatolik: {e}")
+        # Agar webhook ishlamasa, polling rejimini sinab ko'rish
+        try:
+            application.run_polling(drop_pending_updates=True)
+        except Exception as polling_error:
+            logger.error(f"Polling ham ishlamadi: {polling_error}")
 
 if __name__ == '__main__':
     main()
