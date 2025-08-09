@@ -94,18 +94,42 @@ for i in range(0, len(masjid_items), 2):
     for j in range(2):
         if i + j < len(masjid_items):
             key, name = masjid_items[i + j]
-            # Tanlangan bo'lsa ✅, tanlanmagan bo'lsa ⬜
-            icon = "✅" if key in selected else "⬜"
-            # Masjid nomini qisqartirish
-            short_name = name.replace("JOME MASJIDI", "").replace("MASJIDI", "").strip()
-            if len(short_name) > 15:
-                short_name = short_name[:15] + "..."
-            row.append(InlineKeyboardButton(
-                f"{icon} {short_name}", 
-                callback_data=f"toggle_{key}"
-            ))
-    keyboard.append(row)
+            # Handlerlarni qoshish
+    application.add_handler(CommandHandler("start", start_command))
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    application.add_handler(CallbackQueryHandler(handle_callback_query))
+    
+    # Xatolik handlerini qoshish
+    application.add_error_handler(error_handler)
+    
+    logger.info("Bot ishga tushmoqda...")
+    print("Bot ishga tushdi! ✅")
+    
+    # Background Worker uchun polling ishlatish
+    application.run_polling(
+        drop_pending_updates=True,
+        allowed_updates=Update.ALL_TYPES
+    )
+    
+except Exception as e:
+    logger.error(f"Botni ishga tushirishda xatolik: {e}")
+    print(f"❌ Xatolik: {e}")
+```
 
+if **name** == ‘**main**’:
+main() Tanlangan bo’lsa ✅, tanlanmagan bo’lsa ⬜
+icon = “✅” if key in selected else “⬜”
+# Masjid nomini qisqartirish
+short_name = name.replace(“JOME MASJIDI”, “”).replace(“MASJIDI”, “”).strip()
+if len(short_name) > 15:
+short_name = short_name[:15] + “…”
+row.append(InlineKeyboardButton(
+f”{icon} {short_name}”,
+callback_data=f”toggle_{key}”
+))
+keyboard.append(row)
+
+```
 # Boshqaruv tugmalari
 control_buttons = [
     [
