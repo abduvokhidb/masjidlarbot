@@ -3,6 +3,7 @@ import json
 import asyncio
 import logging
 from datetime import datetime
+import pytz
 from typing import Dict, List, Set
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
@@ -125,12 +126,14 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     welcome_message = """🕌 Assalomu alaykum!
 
-*Qoqon Masjidlari Namaz Vaqti Botiga xush kelibsiz!*
+*Qo'qon Masjidlari Namaz Vaqti Botiga xush kelibsiz!*
 
 🔔 *Bildirishnomalar sozlamalari:*
-Siz faqat ozingiz tanlagan masjidlar uchun push notification olasiz.
+Siz faqat o'zingiz tanlagan masjidlar uchun push notification olasiz.
 
-⚙️ *Sozlamalar* orqali kerakli masjidlarni belgilashingiz mumkin."""
+⚙️ *Sozlamalar* orqali kerakli masjidlarni belgilashingiz mumkin.
+
+📍 Barcha vaqtlar Qo'qon mahalliy vaqti bo'yicha."""
     
     await update.message.reply_text(
         welcome_message,
@@ -167,18 +170,20 @@ async def handle_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 *Bot funksiyalari:*
 🕐 Barcha vaqtlar - Tanlangan masjidlar namaz vaqtlari
-📍 Eng yaqin vaqt - Keyingi namaz vaqtini korsatish
-🕌 Masjidlar - Barcha masjidlar royxati
+📍 Eng yaqin vaqt - Keyingi namaz vaqtini ko'rsatish
+🕌 Masjidlar - Barcha masjidlar ro'yxati
 ⚙️ Sozlamalar - Masjidlarni tanlash
-🔔 Bildirishnomalar - Push holati korish
+🔔 Bildirishnomalar - Push holati ko'rish
 
 *Qanday ishlaydi:*
-1. Boshlangich holatda barcha masjidlar tanlangan
+1. Boshlang'ich holatda barcha masjidlar tanlangan
 2. Sozlamalar orqali kerakli masjidlarni belgilang
 3. Faqat tanlangan masjidlar vaqti yangilanganda push olasiz
 
+*Vaqt zonasi:* Qo'qon mahalliy vaqti (UTC+5)
+
 *Murojaat:*
-@{CHANNEL_USERNAME} kanalimizga obuna boling"""
+@{CHANNEL_USERNAME} kanalimizga obuna bo'ling"""
     
     await update.message.reply_text(
         help_text,
@@ -198,9 +203,11 @@ async def handle_next_prayer(update: Update, context: ContextTypes.DEFAULT_TYPE)
         )
         return
     
-    # Hozirgi vaqt
-    now = datetime.now()
+    # Qoqon vaqt zonasi (Ozbekiston)
+    qoqon_tz = pytz.timezone('Asia/Tashkent')  # Qoqon ham Ozbekistonda, bir xil vaqt zonasi
+    now = datetime.now(qoqon_tz)
     current_time = now.strftime("%H:%M")
+    current_date = now.strftime("%d.%m.%Y")
     
     # Namaz nomlari
     prayer_names = ["Bomdod", "Peshin", "Asr", "Shom", "Hufton"]
@@ -232,7 +239,8 @@ async def handle_next_prayer(update: Update, context: ContextTypes.DEFAULT_TYPE)
 🕌 {next_prayer['masjid']}
 🕐 {next_prayer['prayer']}: *{next_prayer['time']}*
 
-⏰ Hozirgi vaqt: {current_time}"""
+⏰ Hozirgi vaqt: {current_time} (Qo'qon vaqti)
+📅 Sana: {current_date}"""
     else:
         message = "📍 Bugun uchun barcha namaz vaqtlari otdi.\nErtaga Bomdod vaqti bilan davom etadi."
     
