@@ -25,14 +25,14 @@ CHANNEL_USERNAME = ‘quqonnamozvaqti’
 
 user_settings = {}
 
-# Masjidlar ro’yxati
+# Masjidlar royxati
 
 MASJIDLAR = {
 “NORBUTABEK”: “NORBUTABEK JOME MASJIDI”,
-“GISHTLIK”: “G’ISHTLIK JOME MASJIDI”,
+“GISHTLIK”: “GISHTLIK JOME MASJIDI”,
 “SHAYXULISLOM”: “SHAYXULISLOM JOME MASJIDI”,
 “HADYA_HOJI”: “HADYA HOJI SHALDIRAMOQ JOME MASJIDI”,
-“AFGONBOG”: “AFG’ONBOG’ JOME MASJIDI”,
+“AFGONBOG”: “AFGONBOG JOME MASJIDI”,
 “SAYYID_AXMADHON”: “SAYYID AXMADHON HOJI JOME MASJIDI”,
 “DEGRIZLIK”: “DEGRIZLIK JOME MASJIDI”,
 “SHAYXON”: “SHAYXON JOME MASJIDI”,
@@ -40,7 +40,7 @@ MASJIDLAR = {
 “ZAYNUL_OBIDIN”: “ZAYNUL OBIDIN AYRILISH JOME MASJIDI”,
 “HAZRATI_ABBOS”: “HAZRATI ABBOS MOLBOZORI JOME MASJIDI”,
 “SAODAT”: “SAODAT JOME MASJIDI”,
-“TOLABOY”: “MUHAMMAD SAID XUJA TO’LABOY JOME MASJIDI”
+“TOLABOY”: “MUHAMMAD SAID XUJA TOLABOY JOME MASJIDI”
 }
 
 # Namaz vaqtlari
@@ -87,49 +87,25 @@ selected = get_user_selected_masjids(user_id)
 keyboard = []
 
 ```
-# Masjidlar ro'yxati (2 tadan qatorda)
+# Masjidlar royxati (2 tadan qatorda)
 masjid_items = list(MASJIDLAR.items())
 for i in range(0, len(masjid_items), 2):
     row = []
     for j in range(2):
         if i + j < len(masjid_items):
             key, name = masjid_items[i + j]
-            # Handlerlarni qoshish
-    application.add_handler(CommandHandler("start", start_command))
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-    application.add_handler(CallbackQueryHandler(handle_callback_query))
-    
-    # Xatolik handlerini qoshish
-    application.add_error_handler(error_handler)
-    
-    logger.info("Bot ishga tushmoqda...")
-    print("Bot ishga tushdi! ✅")
-    
-    # Background Worker uchun polling ishlatish
-    application.run_polling(
-        drop_pending_updates=True,
-        allowed_updates=Update.ALL_TYPES
-    )
-    
-except Exception as e:
-    logger.error(f"Botni ishga tushirishda xatolik: {e}")
-    print(f"❌ Xatolik: {e}")
-```
+            # Tanlangan bolsa tick, tanlanmagan bolsa box
+            icon = "✅" if key in selected else "⬜"
+            # Masjid nomini qisqartirish
+            short_name = name.replace("JOME MASJIDI", "").replace("MASJIDI", "").strip()
+            if len(short_name) > 15:
+                short_name = short_name[:15] + "..."
+            row.append(InlineKeyboardButton(
+                f"{icon} {short_name}", 
+                callback_data=f"toggle_{key}"
+            ))
+    keyboard.append(row)
 
-if **name** == ‘**main**’:
-main() Tanlangan bo’lsa ✅, tanlanmagan bo’lsa ⬜
-icon = “✅” if key in selected else “⬜”
-# Masjid nomini qisqartirish
-short_name = name.replace(“JOME MASJIDI”, “”).replace(“MASJIDI”, “”).strip()
-if len(short_name) > 15:
-short_name = short_name[:15] + “…”
-row.append(InlineKeyboardButton(
-f”{icon} {short_name}”,
-callback_data=f”toggle_{key}”
-))
-keyboard.append(row)
-
-```
 # Boshqaruv tugmalari
 control_buttons = [
     [
@@ -147,21 +123,21 @@ return InlineKeyboardMarkup(keyboard)
 ```
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-“”“Start buyrug’i”””
+“”“Start buyrugi”””
 user_id = update.effective_user.id
 
 ```
-# Agar yangi foydalanuvchi bo'lsa, barcha masjidlarni tanlangan qilib qo'yish
+# Agar yangi foydalanuvchi bolsa, barcha masjidlarni tanlangan qilib qoyish
 if str(user_id) not in user_settings:
     save_user_masjids(user_id, set(MASJIDLAR.keys()))
 
 welcome_message = """🕌 Assalomu alaykum!
 ```
 
-*Qo’qon Masjidlari Namaz Vaqti Botiga xush kelibsiz!*
+*Qoqon Masjidlari Namaz Vaqti Botiga xush kelibsiz!*
 
 🔔 *Bildirishnomalar sozlamalari:*
-Siz faqat o’zingiz tanlagan masjidlar uchun push notification olasiz.
+Siz faqat ozingiz tanlagan masjidlar uchun push notification olasiz.
 
 ⚙️ *Sozlamalar* orqali kerakli masjidlarni belgilashingiz mumkin.”””
 
@@ -199,24 +175,24 @@ else:
 ```
 
 async def handle_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
-“”“Yordam bo’limi”””
+“”“Yordam bolimi”””
 help_text = “”“ℹ️ *YORDAM*
 
 *Bot funksiyalari:*
 🕐 Barcha vaqtlar - Tanlangan masjidlar namaz vaqtlari
-📍 Eng yaqin vaqt - Keyingi namaz vaqtini ko’rsatish
-🕌 Masjidlar - Barcha masjidlar ro’yxati
+📍 Eng yaqin vaqt - Keyingi namaz vaqtini korsatish
+🕌 Masjidlar - Barcha masjidlar royxati
 ⚙️ Sozlamalar - Masjidlarni tanlash
-🔔 Bildirishnomalar - Push holati ko’rish
+🔔 Bildirishnomalar - Push holati korish
 
 *Qanday ishlaydi:*
 
-1. Boshlang’ich holatda barcha masjidlar tanlangan
+1. Boshlangich holatda barcha masjidlar tanlangan
 1. Sozlamalar orqali kerakli masjidlarni belgilang
 1. Faqat tanlangan masjidlar vaqti yangilanganda push olasiz
 
 *Murojaat:*
-@{CHANNEL_USERNAME} kanalimizga obuna bo’ling”””
+@{CHANNEL_USERNAME} kanalimizga obuna boling”””
 
 ```
 await update.message.reply_text(
@@ -227,7 +203,7 @@ await update.message.reply_text(
 ```
 
 async def handle_next_prayer(update: Update, context: ContextTypes.DEFAULT_TYPE):
-“”“Keyingi namaz vaqtini ko’rsatish”””
+“”“Keyingi namaz vaqtini korsatish”””
 user_id = str(update.effective_user.id)
 selected = get_user_selected_masjids(user_id)
 
@@ -276,7 +252,7 @@ if next_prayers:
 
 ⏰ Hozirgi vaqt: {current_time}”””
 else:
-message = “📍 Bugun uchun barcha namaz vaqtlari o’tdi.\nErtaga Bomdod vaqti bilan davom etadi.”
+message = “📍 Bugun uchun barcha namaz vaqtlari otdi.\nErtaga Bomdod vaqti bilan davom etadi.”
 
 ```
 await update.message.reply_text(
@@ -434,8 +410,8 @@ await update.message.reply_text(
 ```
 
 async def handle_all_masjids(update: Update, context: ContextTypes.DEFAULT_TYPE):
-“”“Barcha masjidlar (ko’rish uchun)”””
-message = “🕌 *BARCHA MASJIDLAR RO’YXATI:*\n\n”
+“”“Barcha masjidlar (korish uchun)”””
+message = “🕌 *BARCHA MASJIDLAR ROYXATI:*\n\n”
 
 ```
 for i, (key, name) in enumerate(MASJIDLAR.items(), 1):
@@ -452,7 +428,7 @@ await update.message.reply_text(
 ```
 
 async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
-“”“Xatolik handler’i”””
+“”“Xatolik handleri”””
 logger.error(msg=“Xatolik yuz berdi:”, exc_info=context.error)
 
 def main():
@@ -462,12 +438,12 @@ try:
 application = Application.builder().token(BOT_TOKEN).build()
 
 ```
-    # Handler'larni qo'shish
+    # Handlerlarni qoshish
     application.add_handler(CommandHandler("start", start_command))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     application.add_handler(CallbackQueryHandler(handle_callback_query))
     
-    # Xatolik handler'ini qo'shish
+    # Xatolik handlerini qoshish
     application.add_error_handler(error_handler)
     
     logger.info("Bot ishga tushmoqda...")
