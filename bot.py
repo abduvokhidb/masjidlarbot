@@ -242,7 +242,11 @@ async def handle_next_prayer(update: Update, context: ContextTypes.DEFAULT_TYPE)
 ⏰ Hozirgi vaqt: {current_time} (Qo'qon vaqti)
 📅 Sana: {current_date}"""
     else:
-        message = "📍 Bugun uchun barcha namaz vaqtlari otdi.\nErtaga Bomdod vaqti bilan davom etadi."
+        message = f"""📍 Bugun uchun barcha namaz vaqtlari o'tdi.
+Ertaga Bomdod vaqti bilan davom etadi.
+
+⏰ Hozirgi vaqt: {current_time} (Qo'qon vaqti)
+📅 Sana: {current_date}"""
     
     await update.message.reply_text(
         message,
